@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Summer Stars — Skating Leaderboard</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="page">
+      <h1><span class="star">★</span> Summer Stars</h1>
+      <p>Skating achievements — most stars at the top!</p>
+    </header>
+
+    <div class="nav">
+      <a href="admin.html">Admin sign-in →</a>
+    </div>
+
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Skater</th>
+            <th style="text-align:right">Stars</th>
+          </tr>
+        </thead>
+        <tbody id="rows">
+          <tr><td colspan="3" class="empty">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script>
+    const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const rows = document.getElementById("rows");
+
+    function render(skaters) {
+      if (!skaters || skaters.length === 0) {
+        rows.innerHTML =
+          '<tr><td colspan="3" class="empty">No skaters yet — check back soon!</td></tr>';
+        return;
+      }
+      rows.innerHTML = skaters
+        .map((s, i) => {
+          const rank = i + 1;
+          const topClass = rank <= 3 ? `top-${rank}` : "";
+          const stars = "★".repeat(Math.min(s.stars, 5));
+          return `<tr class="${topClass}">
+            <td class="rank">${rank}</td>
+            <td class="name">${escapeHtml(s.name)}</td>
+            <td class="stars">${s.stars} <span style="color:var(--accent)">${stars}</span></td>
+          </tr>`;
+        })
+        .join("");
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, (c) =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
+      );
+    }
+
+    async function load() {
+      const { data, error } = await db
+        .from("skaters")
+        .select("name, stars")
+        .order("stars", { ascending: false })
+        .order("name", { ascending: true });
+      if (error) {
+        rows.innerHTML = `<tr><td colspan="3" class="empty">Could not load the leaderboard.</td></tr>`;
+        console.error(error);
+        return;
+      }
+      render(data);
+    }
+
+    load();
+
+    // Live updates — the table refreshes automatically when the admin
+    // adds stars, on every open device.
+    db.channel("skaters-changes")
+      .on("postgres_changes", { event: "*", schema: "public", table: "skaters" }, load)
+      .subscribe();
+  </script>
+</body>
+</html>

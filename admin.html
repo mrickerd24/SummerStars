@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Summer Stars — Admin</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="page">
+      <h1><span class="star">★</span> Summer Stars — Admin</h1>
+      <p>Sign in to award stars.</p>
+    </header>
+
+    <div class="nav">
+      <a href="index.html">← View public leaderboard</a>
+    </div>
+
+    <!-- ── Sign-in ──────────────────────────────────────────────────── -->
+    <div class="card" id="loginCard">
+      <label for="password">Admin password</label>
+      <input type="password" id="password" placeholder="Enter password" autocomplete="current-password" />
+      <button id="loginBtn">Sign in</button>
+      <div class="msg err" id="loginMsg"></div>
+    </div>
+
+    <!-- ── Award stars ──────────────────────────────────────────────── -->
+    <div class="card" id="adminCard" style="display:none">
+      <div class="bar">
+        <h2>Award stars</h2>
+        <button class="ghost" id="logoutBtn" style="width:auto;margin:0;padding:8px 14px">Sign out</button>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="name">Skater name</label>
+          <input type="text" id="name" placeholder="e.g. Ava Lindqvist" autocomplete="off" />
+        </div>
+        <div>
+          <label for="stars">Stars to add</label>
+          <input type="number" id="stars" value="1" min="1" step="1" />
+        </div>
+      </div>
+      <p class="hint">If the skater is already on the list, these stars are added to their total.</p>
+      <button id="addBtn">Add stars</button>
+      <div class="msg" id="addMsg"></div>
+    </div>
+
+    <!-- ── Current standings (admin reference) ──────────────────────── -->
+    <div class="card" id="listCard" style="display:none">
+      <div class="bar"><h2>Current standings</h2></div>
+      <table>
+        <thead>
+          <tr><th>#</th><th>Skater</th><th style="text-align:right">Stars</th><th></th></tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script>
+    const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const loginCard = document.getElementById("loginCard");
+    const adminCard = document.getElementById("adminCard");
+    const listCard = document.getElementById("listCard");
+    const loginMsg = document.getElementById("loginMsg");
+    const addMsg = document.getElementById("addMsg");
+    const rows = document.getElementById("rows");
+
+    function msg(el, text, type) {
+      el.textContent = text;
+      el.className = "msg show " + type;
+    }
+    function clearMsg(el) { el.className = "msg"; }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, (c) =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
+      );
+    }
+
+    // ── Auth state ────────────────────────────────────────────────────
+    async function refreshUI() {
+      const { data } = await db.auth.getSession();
+      const signedIn = !!data.session;
+      loginCard.style.display = signedIn ? "none" : "block";
+      adminCard.style.display = signedIn ? "block" : "none";
+      listCard.style.display = signedIn ? "block" : "none";
+      if (signedIn) loadList();
+    }
+
+    document.getElementById("loginBtn").addEventListener("click", async () => {
+      clearMsg(loginMsg);
+      const password = document.getElementById("password").value;
+      if (!password) return msg(loginMsg, "Please enter the password.", "err");
+      const { error } = await db.auth.signInWithPassword({
+        email: ADMIN_EMAIL,
+        password,
+      });
+      if (error) return msg(loginMsg, "Incorrect password.", "err");
+      document.getElementById("password").value = "";
+      refreshUI();
+    });
+
+    document.getElementById("password").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") document.getElementById("loginBtn").click();
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+      await db.auth.signOut();
+      refreshUI();
+    });
+
+    // ── Add stars (create or add to existing total) ───────────────────
+    document.getElementById("addBtn").addEventListener("click", async () => {
+      clearMsg(addMsg);
+      const name = document.getElementById("name").value.trim();
+      const stars = parseInt(document.getElementById("stars").value, 10);
+
+      if (!name) return msg(addMsg, "Please enter a name.", "err");
+      if (!Number.isInteger(stars) || stars < 1)
+        return msg(addMsg, "Stars must be a whole number of 1 or more.", "err");
+
+      // Look for an existing skater by name (case-insensitive).
+      const { data: existing, error: findErr } = await db
+        .from("skaters")
+        .select("id, name, stars")
+        .ilike("name", name)
+        .maybeSingle();
+
+      if (findErr) return msg(addMsg, "Something went wrong. Try again.", "err");
+
+      let error;
+      if (existing) {
+        ({ error } = await db
+          .from("skaters")
+          .update({ stars: existing.stars + stars })
+          .eq("id", existing.id));
+      } else {
+        ({ error } = await db.from("skaters").insert({ name, stars }));
+      }
+
+      if (error) {
+        console.error(error);
+        return msg(addMsg, "Could not save. Are you still signed in?", "err");
+      }
+
+      const total = existing ? existing.stars + stars : stars;
+      msg(
+        addMsg,
+        `Added ${stars} ⭐ to ${existing ? existing.name : name} (total ${total}).`,
+        "ok"
+      );
+      document.getElementById("name").value = "";
+      document.getElementById("stars").value = "1";
+      document.getElementById("name").focus();
+      loadList();
+    });
+
+    // ── Standings list with delete (admin only) ───────────────────────
+    async function loadList() {
+      const { data, error } = await db
+        .from("skaters")
+        .select("id, name, stars")
+        .order("stars", { ascending: false })
+        .order("name", { ascending: true });
+      if (error) return;
+      if (!data.length) {
+        rows.innerHTML = '<tr><td colspan="4" class="empty">No skaters yet.</td></tr>';
+        return;
+      }
+      rows.innerHTML = data
+        .map(
+          (s, i) => `<tr>
+            <td class="rank">${i + 1}</td>
+            <td class="name">${escapeHtml(s.name)}</td>
+            <td class="stars">${s.stars} ⭐</td>
+            <td style="text-align:right"><button class="tiny" data-id="${s.id}" data-name="${escapeHtml(s.name)}">Remove</button></td>
+          </tr>`
+        )
+        .join("");
+    }
+
+    rows.addEventListener("click", async (e) => {
+      const btn = e.target.closest("button[data-id]");
+      if (!btn) return;
+      if (!confirm(`Remove ${btn.dataset.name} from the leaderboard?`)) return;
+      const { error } = await db.from("skaters").delete().eq("id", btn.dataset.id);
+      if (error) return msg(addMsg, "Could not remove. Are you still signed in?", "err");
+      loadList();
+    });
+
+    refreshUI();
+  </script>
+</body>
+</html>
