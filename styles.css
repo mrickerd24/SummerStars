@@ -68,7 +68,10 @@ header.page p {
 }
 
 .nav {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 24px;
 }
 
@@ -85,7 +88,7 @@ header.page p {
 
 .nav .langtoggle {
   width: auto;
-  margin: 0 0 0 8px;
+  margin: 0;
   padding: 7px 14px;
   font-size: 14px;
   font-weight: 600;
@@ -200,19 +203,31 @@ input:focus { outline: 2px solid var(--accent-2); border-color: transparent; }
 button {
   margin-top: 18px;
   width: 100%;
-  padding: 13px 16px;
+  display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 1rem 1.75rem;
   font-size: 16px;
   font-weight: 700;
-  border: none;
-  border-radius: 10px;
-  background: linear-gradient(135deg, var(--accent), #ffb02e);
-  color: #2a2300;
+  border: 0;
+  border-radius: 0.5rem;
+  background-image: linear-gradient(-180deg, #37AEE2 0%, #1E96C8 100%);
+  color: #FFFFFF;
   cursor: pointer;
-  transition: transform 0.08s ease, filter 0.15s ease;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  transition: transform 0.08s ease, background-image 0.15s ease, filter 0.15s ease;
 }
-button:hover { filter: brightness(1.05); }
+button:hover {
+  background-image: linear-gradient(-180deg, #1D95C9 0%, #17759C 100%);
+}
 button:active { transform: translateY(1px); }
 button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+@media (min-width: 768px) {
+  button { padding: 1rem 2rem; }
+}
 
 button.ghost {
   background: transparent;
