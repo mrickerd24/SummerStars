@@ -130,11 +130,63 @@ td.rank { width: 56px; font-weight: 700; font-size: 18px; }
 td.name { font-size: 17px; }
 td.stars { text-align: right; font-weight: 700; font-size: 17px; white-space: nowrap; }
 
-tr.top-1 td.rank { color: var(--gold); }
-tr.top-2 td.rank { color: var(--silver); }
-tr.top-3 td.rank { color: var(--bronze); }
+/* ── Top-3 medal animations ───────────────────────────────────────────── */
+tr.top-1 td.rank { color: var(--gold);   animation: glow-gold   2.4s ease-in-out infinite; }
+tr.top-2 td.rank { color: var(--silver); animation: glow-silver 2.4s ease-in-out infinite; }
+tr.top-3 td.rank { color: var(--bronze); animation: glow-bronze 2.4s ease-in-out infinite; }
 
-tr.top-1 { background: rgba(255, 211, 77, 0.08); }
+/* A medal badge that gently pops in front of the rank number. */
+tr.top-1 td.rank::before,
+tr.top-2 td.rank::before,
+tr.top-3 td.rank::before {
+  margin-right: 6px;
+  display: inline-block;
+  animation: medal-pop 2.4s ease-in-out infinite;
+}
+tr.top-1 td.rank::before { content: "🥇"; }
+tr.top-2 td.rank::before { content: "🥈"; }
+tr.top-3 td.rank::before { content: "🥉"; }
+
+/* Gold winner row gets an animated shimmer sweep. */
+tr.top-1 {
+  background-image: linear-gradient(
+    100deg,
+    rgba(255, 211, 77, 0.05) 0%,
+    rgba(255, 211, 77, 0.22) 50%,
+    rgba(255, 211, 77, 0.05) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 3.5s linear infinite;
+}
+tr.top-2 { background: rgba(215, 221, 232, 0.07); }
+tr.top-3 { background: rgba(224, 147, 90, 0.07); }
+
+@keyframes glow-gold {
+  0%, 100% { text-shadow: 0 0 5px rgba(255, 211, 77, 0.45); }
+  50%      { text-shadow: 0 0 16px rgba(255, 211, 77, 0.95); }
+}
+@keyframes glow-silver {
+  0%, 100% { text-shadow: 0 0 5px rgba(215, 221, 232, 0.45); }
+  50%      { text-shadow: 0 0 16px rgba(215, 221, 232, 0.95); }
+}
+@keyframes glow-bronze {
+  0%, 100% { text-shadow: 0 0 5px rgba(224, 147, 90, 0.45); }
+  50%      { text-shadow: 0 0 14px rgba(224, 147, 90, 0.9); }
+}
+@keyframes medal-pop {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50%      { transform: scale(1.25) rotate(-6deg); }
+}
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  tr.top-1 td.rank, tr.top-2 td.rank, tr.top-3 td.rank,
+  tr.top-1, tr.top-1 td.rank::before, tr.top-2 td.rank::before,
+  tr.top-3 td.rank::before { animation: none; }
+}
 
 .empty {
   text-align: center;
