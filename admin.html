@@ -41,7 +41,7 @@
         </div>
         <div>
           <label for="stars">Stars to add</label>
-          <input type="number" id="stars" value="1" min="1" step="1" />
+          <input type="number" id="stars" value="25" min="1" step="25" />
         </div>
       </div>
       <p class="hint">If the skater is already on the list, these stars are added to their total.</p>
@@ -163,7 +163,7 @@
         "ok"
       );
       document.getElementById("name").value = "";
-      document.getElementById("stars").value = "1";
+      document.getElementById("stars").value = "25";
       document.getElementById("name").focus();
       loadList();
     });
