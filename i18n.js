@@ -9,7 +9,7 @@ const I18N = {
   en: {
     // index.html
     "doc.index": "Summer Stars — Skating Leaderboard",
-    "index.tagline": "Skating achievements — most stars at the top!",
+    "index.tagline": "Pyramid of the rising stars",
     "nav.admin": "Admin sign-in →",
     "th.rank": "#",
     "th.skater": "Skater",
@@ -50,8 +50,8 @@ const I18N = {
   },
   fr: {
     // index.html
-    "doc.index": "Étoiles d'été — Classement de patinage",
-    "index.tagline": "Réussites en patinage — le plus d'étoiles en haut !",
+    "doc.index": "La pyramide des étoiles montante",
+    "index.tagline": "La pyramide des étoiles montante",
     "nav.admin": "Connexion administrateur →",
     "th.rank": "#",
     "th.skater": "Patineur",
@@ -63,7 +63,7 @@ const I18N = {
     "doc.admin": "Étoiles d'été — Administration",
     "admin.h1": "Étoiles d'été — Administration",
     "admin.subtitle": "Connectez-vous pour attribuer des étoiles.",
-    "nav.public": "← Voir le classement public",
+    "nav.public": "← Voir le classement",
     "label.email": "Courriel administrateur",
     "ph.email": "vous@exemple.com",
     "label.password": "Mot de passe administrateur",
