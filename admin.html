@@ -136,7 +136,10 @@
         .ilike("name", name)
         .maybeSingle();
 
-      if (findErr) return msg(addMsg, "Something went wrong. Try again.", "err");
+      if (findErr) {
+        console.error(findErr);
+        return msg(addMsg, "Lookup failed: " + (findErr.message || findErr.code || "unknown error"), "err");
+      }
 
       let error;
       if (existing) {
@@ -150,7 +153,7 @@
 
       if (error) {
         console.error(error);
-        return msg(addMsg, "Could not save. Are you still signed in?", "err");
+        return msg(addMsg, "Could not save: " + (error.message || error.code || "unknown error"), "err");
       }
 
       const total = existing ? existing.stars + stars : stars;
