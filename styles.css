@@ -181,6 +181,7 @@ input:focus { outline: 2px solid var(--accent-2); border-color: transparent; }
   margin: 0;
   padding: 0;
   flex: 0 0 auto;
+  align-items: center;
   font-size: 24px;
   line-height: 1;
   border-radius: 8px;
