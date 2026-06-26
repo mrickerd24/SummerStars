@@ -135,6 +135,23 @@ tr.top-1 td.rank { color: var(--gold);   animation: glow-gold   2.4s ease-in-out
 tr.top-2 td.rank { color: var(--silver); animation: glow-silver 2.4s ease-in-out infinite; }
 tr.top-3 td.rank { color: var(--bronze); animation: glow-bronze 2.4s ease-in-out infinite; }
 
+/* Twinkling sparkle after the name — brightest for 1st, faint for 3rd.
+   --spark sets each row's peak intensity; the twinkle keeps that ratio. */
+tr.top-1 { --spark: 1; }
+tr.top-2 { --spark: 0.55; }
+tr.top-3 { --spark: 0.25; }
+
+tr.top-1 td.name::after,
+tr.top-2 td.name::after,
+tr.top-3 td.name::after {
+  content: " ✨";
+  display: inline-block;
+  margin-left: 6px;
+  animation: twinkle 1.8s ease-in-out infinite;
+}
+tr.top-2 td.name::after { animation-duration: 2.2s; }
+tr.top-3 td.name::after { animation-duration: 2.6s; }
+
 /* A medal badge that gently pops in front of the rank number. */
 tr.top-1 td.rank::before,
 tr.top-2 td.rank::before,
@@ -181,11 +198,20 @@ tr.top-3 { background: rgba(224, 147, 90, 0.07); }
   from { background-position: 200% 0; }
   to   { background-position: -200% 0; }
 }
+@keyframes twinkle {
+  0%, 100% { opacity: calc(var(--spark) * 0.25); transform: scale(0.8) rotate(0deg); }
+  50%      { opacity: var(--spark);              transform: scale(1.25) rotate(18deg); }
+}
 
 @media (prefers-reduced-motion: reduce) {
   tr.top-1 td.rank, tr.top-2 td.rank, tr.top-3 td.rank,
   tr.top-1, tr.top-1 td.rank::before, tr.top-2 td.rank::before,
-  tr.top-3 td.rank::before { animation: none; }
+  tr.top-3 td.rank::before,
+  tr.top-1 td.name::after, tr.top-2 td.name::after,
+  tr.top-3 td.name::after { animation: none; }
+  tr.top-1 td.name::after { opacity: 1; }
+  tr.top-2 td.name::after { opacity: 0.55; }
+  tr.top-3 td.name::after { opacity: 0.25; }
 }
 
 .empty {
