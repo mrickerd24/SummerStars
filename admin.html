@@ -19,6 +19,8 @@
 
     <!-- ── Sign-in ──────────────────────────────────────────────────── -->
     <div class="card" id="loginCard">
+      <label for="email">Admin email</label>
+      <input type="email" id="email" placeholder="you@example.com" autocomplete="username" />
       <label for="password">Admin password</label>
       <input type="password" id="password" placeholder="Enter password" autocomplete="current-password" />
       <button id="loginBtn">Sign in</button>
@@ -95,17 +97,19 @@
 
     document.getElementById("loginBtn").addEventListener("click", async () => {
       clearMsg(loginMsg);
+      const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
-      if (!password) return msg(loginMsg, "Please enter the password.", "err");
-      const { error } = await db.auth.signInWithPassword({
-        email: ADMIN_EMAIL,
-        password,
-      });
-      if (error) return msg(loginMsg, "Incorrect password.", "err");
+      if (!email) return msg(loginMsg, "Please enter your email.", "err");
+      if (!password) return msg(loginMsg, "Please enter your password.", "err");
+      const { error } = await db.auth.signInWithPassword({ email, password });
+      if (error) return msg(loginMsg, "Incorrect email or password.", "err");
       document.getElementById("password").value = "";
       refreshUI();
     });
 
+    document.getElementById("email").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") document.getElementById("password").focus();
+    });
     document.getElementById("password").addEventListener("keydown", (e) => {
       if (e.key === "Enter") document.getElementById("loginBtn").click();
     });
