@@ -46,7 +46,20 @@ header.page h1 {
   letter-spacing: 0.5px;
 }
 
-header.page h1 .star { color: var(--accent); }
+header.page h1 .star {
+  color: var(--accent);
+  display: inline-block;
+  animation: spin-star 3s linear infinite;
+}
+
+@keyframes spin-star {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  header.page h1 .star { animation: none; }
+}
 
 header.page p {
   margin: 0;
