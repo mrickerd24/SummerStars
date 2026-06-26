@@ -3,58 +3,63 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Summer Stars — Admin</title>
+  <title>Team ExO Summer Superstars — Admin</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="wrap">
     <header class="page">
-      <h1><span class="star">★</span> Summer Stars — Admin</h1>
-      <p>Sign in to award stars.</p>
+      <h1><span class="star">★</span> Team ExO <br> Summer Superstars <span class="star">★</span></h1>
+      <p data-i18n="admin.subtitle">Sign in to award stars.</p>
     </header>
 
     <div class="nav">
-      <a href="index.html">← View public leaderboard</a>
+      <a href="index.html" data-i18n="nav.public">← View public leaderboard</a>
+      <button type="button" class="langtoggle" data-lang-toggle>Français</button>
     </div>
 
     <!-- ── Sign-in ──────────────────────────────────────────────────── -->
     <div class="card" id="loginCard">
-      <label for="email">Admin email</label>
-      <input type="email" id="email" placeholder="you@example.com" autocomplete="username" />
-      <label for="password">Admin password</label>
-      <input type="password" id="password" placeholder="Enter password" autocomplete="current-password" />
-      <button id="loginBtn">Sign in</button>
+      <label for="email" data-i18n="label.email">Admin email</label>
+      <input type="email" id="email" data-i18n-ph="ph.email" placeholder="you@example.com" autocomplete="username" />
+      <label for="password" data-i18n="label.password">Admin password</label>
+      <input type="password" id="password" data-i18n-ph="ph.password" placeholder="Enter password" autocomplete="current-password" />
+      <button id="loginBtn" data-i18n="btn.signin">Sign in</button>
       <div class="msg err" id="loginMsg"></div>
     </div>
 
     <!-- ── Award stars ──────────────────────────────────────────────── -->
     <div class="card" id="adminCard" style="display:none">
       <div class="bar">
-        <h2>Award stars</h2>
-        <button class="ghost" id="logoutBtn" style="width:auto;margin:0;padding:8px 14px">Sign out</button>
+        <h2 data-i18n="admin.award">Award stars</h2>
+        <button class="ghost" id="logoutBtn" style="width:auto;margin:0;padding:8px 14px" data-i18n="btn.signout">Sign out</button>
       </div>
 
       <div class="row">
         <div>
-          <label for="name">Skater name</label>
-          <input type="text" id="name" placeholder="e.g. Ava Lindqvist" autocomplete="off" />
+          <label for="name" data-i18n="label.name">Skater name</label>
+          <input type="text" id="name" data-i18n-ph="ph.name" placeholder="Name" autocomplete="off" />
         </div>
         <div>
-          <label for="stars">Stars to add</label>
-          <input type="number" id="stars" value="25" min="1" step="25" />
+          <label data-i18n="label.stars">Stars to add</label>
+          <div class="stepper">
+            <button type="button" id="starsMinus" aria-label="−10">−</button>
+            <span id="starsValue">10</span>
+            <button type="button" id="starsPlus" aria-label="+10">+</button>
+          </div>
         </div>
       </div>
-      <p class="hint">If the skater is already on the list, these stars are added to their total.</p>
-      <button id="addBtn">Add stars</button>
+      <p class="hint" data-i18n="admin.hint">If the skater is already on the list, these stars are added to their total.</p>
+      <button id="addBtn" data-i18n="btn.add">Add stars</button>
       <div class="msg" id="addMsg"></div>
     </div>
 
     <!-- ── Current standings (admin reference) ──────────────────────── -->
     <div class="card" id="listCard" style="display:none">
-      <div class="bar"><h2>Current standings</h2></div>
+      <div class="bar"><h2 data-i18n="admin.standings">Current standings</h2></div>
       <table>
         <thead>
-          <tr><th>#</th><th>Skater</th><th style="text-align:right">Stars</th><th></th></tr>
+          <tr><th data-i18n="th.rank">#</th><th data-i18n="th.skater">Skater</th><th style="text-align:right" data-i18n="th.stars">Stars</th><th></th></tr>
         </thead>
         <tbody id="rows"></tbody>
       </table>
@@ -63,6 +68,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
+  <script src="i18n.js"></script>
   <script>
     const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -85,6 +91,21 @@
       );
     }
 
+    // ── Stars stepper (+/− in increments of 10) ───────────────────────
+    const STEP = 10;
+    const MIN_STARS = 10;
+    let starsToAdd = MIN_STARS;
+    const starsValue = document.getElementById("starsValue");
+    function renderStars() { starsValue.textContent = starsToAdd; }
+    document.getElementById("starsMinus").addEventListener("click", () => {
+      starsToAdd = Math.max(MIN_STARS, starsToAdd - STEP);
+      renderStars();
+    });
+    document.getElementById("starsPlus").addEventListener("click", () => {
+      starsToAdd += STEP;
+      renderStars();
+    });
+
     // ── Auth state ────────────────────────────────────────────────────
     async function refreshUI() {
       const { data } = await db.auth.getSession();
@@ -99,10 +120,10 @@
       clearMsg(loginMsg);
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
-      if (!email) return msg(loginMsg, "Please enter your email.", "err");
-      if (!password) return msg(loginMsg, "Please enter your password.", "err");
+      if (!email) return msg(loginMsg, t("err.email"), "err");
+      if (!password) return msg(loginMsg, t("err.password"), "err");
       const { error } = await db.auth.signInWithPassword({ email, password });
-      if (error) return msg(loginMsg, "Incorrect email or password.", "err");
+      if (error) return msg(loginMsg, t("err.credentials"), "err");
       document.getElementById("password").value = "";
       refreshUI();
     });
@@ -123,11 +144,11 @@
     document.getElementById("addBtn").addEventListener("click", async () => {
       clearMsg(addMsg);
       const name = document.getElementById("name").value.trim();
-      const stars = parseInt(document.getElementById("stars").value, 10);
+      const stars = starsToAdd;
 
-      if (!name) return msg(addMsg, "Please enter a name.", "err");
+      if (!name) return msg(addMsg, t("err.name"), "err");
       if (!Number.isInteger(stars) || stars < 1)
-        return msg(addMsg, "Stars must be a whole number of 1 or more.", "err");
+        return msg(addMsg, t("err.starnum"), "err");
 
       // Look for an existing skater by name (case-insensitive).
       const { data: existing, error: findErr } = await db
@@ -138,7 +159,7 @@
 
       if (findErr) {
         console.error(findErr);
-        return msg(addMsg, "Lookup failed: " + (findErr.message || findErr.code || "unknown error"), "err");
+        return msg(addMsg, t("err.lookup") + (findErr.message || findErr.code || "unknown error"), "err");
       }
 
       let error;
@@ -153,17 +174,18 @@
 
       if (error) {
         console.error(error);
-        return msg(addMsg, "Could not save: " + (error.message || error.code || "unknown error"), "err");
+        return msg(addMsg, t("err.save") + (error.message || error.code || "unknown error"), "err");
       }
 
       const total = existing ? existing.stars + stars : stars;
       msg(
         addMsg,
-        `Added ${stars} ⭐ to ${existing ? existing.name : name} (total ${total}).`,
+        t("msg.added", { stars, name: existing ? existing.name : name, total }),
         "ok"
       );
       document.getElementById("name").value = "";
-      document.getElementById("stars").value = "25";
+      starsToAdd = MIN_STARS;
+      renderStars();
       document.getElementById("name").focus();
       loadList();
     });
@@ -177,7 +199,7 @@
         .order("name", { ascending: true });
       if (error) return;
       if (!data.length) {
-        rows.innerHTML = '<tr><td colspan="4" class="empty">No skaters yet.</td></tr>';
+        rows.innerHTML = `<tr><td colspan="4" class="empty">${t("admin.empty")}</td></tr>`;
         return;
       }
       rows.innerHTML = data
@@ -186,7 +208,7 @@
             <td class="rank">${i + 1}</td>
             <td class="name">${escapeHtml(s.name)}</td>
             <td class="stars">${s.stars} ⭐</td>
-            <td style="text-align:right"><button class="tiny" data-id="${s.id}" data-name="${escapeHtml(s.name)}">Remove</button></td>
+            <td style="text-align:right"><button class="tiny" data-id="${s.id}" data-name="${escapeHtml(s.name)}">${t("btn.remove")}</button></td>
           </tr>`
         )
         .join("");
@@ -195,11 +217,15 @@
     rows.addEventListener("click", async (e) => {
       const btn = e.target.closest("button[data-id]");
       if (!btn) return;
-      if (!confirm(`Remove ${btn.dataset.name} from the leaderboard?`)) return;
+      if (!confirm(t("confirm.remove", { name: btn.dataset.name }))) return;
       const { error } = await db.from("skaters").delete().eq("id", btn.dataset.id);
-      if (error) return msg(addMsg, "Could not remove. Are you still signed in?", "err");
+      if (error) return msg(addMsg, t("err.save") + (error.message || error.code || "unknown error"), "err");
       loadList();
     });
+
+    initI18n();
+    // The standings list is built in JS, so re-render it on language change.
+    document.addEventListener("langchange", loadList);
 
     refreshUI();
   </script>

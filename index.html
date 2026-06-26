@@ -6,28 +6,29 @@
   <title>Summer Stars — Skating Leaderboard</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body>
+<body data-i18n-title="doc.index">
   <div class="wrap">
     <header class="page">
-      <h1><span class="star">★</span> Summer Stars</h1>
-      <p>Skating achievements — most stars at the top!</p>
+      <h1><span class="star">★</span> Summer Stars <span class="star">★</span></h1>
+      <p data-i18n="index.tagline">Skating achievements — most stars at the top!</p>
     </header>
 
     <div class="nav">
-      <a href="admin.html">Admin sign-in →</a>
+      <a href="admin.html" data-i18n="nav.admin">Admin sign-in →</a>
+      <button type="button" class="langtoggle" data-lang-toggle>Français</button>
     </div>
 
     <div class="card">
       <table>
         <thead>
           <tr>
-            <th>#</th>
-            <th>Skater</th>
-            <th style="text-align:right">Stars</th>
+            <th data-i18n="th.rank">#</th>
+            <th data-i18n="th.skater">Skater</th>
+            <th style="text-align:right" data-i18n="th.stars">Stars</th>
           </tr>
         </thead>
         <tbody id="rows">
-          <tr><td colspan="3" class="empty">Loading…</td></tr>
+          <tr><td colspan="3" class="empty" data-i18n="index.loading">Loading…</td></tr>
         </tbody>
       </table>
     </div>
@@ -35,14 +36,17 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
+  <script src="i18n.js"></script>
   <script>
     const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     const rows = document.getElementById("rows");
+    let lastData = null;
 
     function render(skaters) {
+      lastData = skaters;
       if (!skaters || skaters.length === 0) {
         rows.innerHTML =
-          '<tr><td colspan="3" class="empty">No skaters yet — check back soon!</td></tr>';
+          `<tr><td colspan="3" class="empty">${t("index.empty")}</td></tr>`;
         return;
       }
       rows.innerHTML = skaters
@@ -72,12 +76,18 @@
         .order("stars", { ascending: false })
         .order("name", { ascending: true });
       if (error) {
-        rows.innerHTML = `<tr><td colspan="3" class="empty">Could not load the leaderboard.</td></tr>`;
+        rows.innerHTML = `<tr><td colspan="3" class="empty">${t("index.error")}</td></tr>`;
         console.error(error);
         return;
       }
       render(data);
     }
+
+    initI18n();
+    // Re-render the table (its text is built in JS) when the language changes.
+    document.addEventListener("langchange", () => {
+      if (lastData !== null) render(lastData);
+    });
 
     load();
 
