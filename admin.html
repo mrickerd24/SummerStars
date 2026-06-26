@@ -39,7 +39,8 @@
       <div class="row">
         <div>
           <label for="name" data-i18n="label.name">Skater name</label>
-          <input type="text" id="name" data-i18n-ph="ph.name" placeholder="Name" autocomplete="off" />
+          <input type="text" id="name" data-i18n-ph="ph.name" placeholder="Name" autocomplete="off" list="skaterNames" />
+          <datalist id="skaterNames"></datalist>
         </div>
         <div>
           <label data-i18n="label.stars">Stars to add</label>
@@ -199,6 +200,12 @@
         .order("stars", { ascending: false })
         .order("name", { ascending: true });
       if (error) return;
+
+      // Feed existing names into the autocomplete dropdown for the add form.
+      document.getElementById("skaterNames").innerHTML = data
+        .map((s) => `<option value="${escapeHtml(s.name)}"></option>`)
+        .join("");
+
       if (!data.length) {
         rows.innerHTML = `<tr><td colspan="4" class="empty">${t("admin.empty")}</td></tr>`;
         return;
