@@ -93,11 +93,7 @@ header.page p {
   font-size: 14px;
   font-weight: 600;
   border-radius: 999px;
-  background: transparent;
-  color: var(--accent-2);
-  border: 1px solid var(--card-border);
 }
-.nav .langtoggle:hover { background: var(--card); filter: none; }
 
 .card {
   background: var(--card);
@@ -188,10 +184,7 @@ input:focus { outline: 2px solid var(--accent-2); border-color: transparent; }
   font-size: 24px;
   line-height: 1;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--text);
 }
-.stepper button:hover { background: rgba(255, 255, 255, 0.16); filter: none; }
 .stepper span {
   flex: 1;
   text-align: center;
@@ -230,8 +223,6 @@ button:disabled { opacity: 0.6; cursor: not-allowed; }
 }
 
 button.ghost {
-  background: transparent;
-  color: var(--muted);
   border: 1px solid var(--card-border);
 }
 
@@ -240,9 +231,6 @@ button.tiny {
   margin: 0;
   padding: 6px 10px;
   font-size: 13px;
-  background: transparent;
-  color: var(--danger);
-  border: 1px solid rgba(255, 107, 107, 0.4);
 }
 
 .msg {
